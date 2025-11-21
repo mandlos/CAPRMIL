@@ -1,0 +1,70 @@
+data:
+  dataset_config: ../dataset_dependent_configs/cam16/cam_univ1_dt_config.yaml
+  artifact_dir: ../dataset_dependent_configs/cam16/out/cam_univ1_lvl2
+  data_dims: 1024    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
+  num_classes: 2
+  use_h5: True
+  split: 0
+
+model:
+  attention: agp # nngp, nnodgp
+  jitter: 1.e-3 # Jitter to add in the diagonal for the kernel
+  attn_hl_activation: sigmoid # Activation before gp layer ['sigmoid', 'tanh']
+  hidden_layer_size_0: 768 # Must be non-zero
+  hidden_layer_size_1: 384
+  hidden_layer_size_2: 256
+  hidden_layer_size_att: 64   # Agp authors propose 64 (Arne Schmidt)
+  inducing_points: 80    # Should not become excessively large i.e. > 100
+  prior_mean: 0.0      # Prior mean of inducing points distribution p(u), u=f(Z)
+  prior_variance: 1.   
+  kl_factor: 1   # Factor to multiply regularizer kl_loss i.e. KL(q(u)||p(u)).
+  load_model: False # 'None' or path to experiment folder which contains 'models' directory with .h5 files
+  save_model: True # True or False
+  mc_samples: 30 # Number of MC samples from the prior f|u (direct output of the GP layer)
+  kernel_hyperparams: {amp: 0.5, lengthscale_constraint: 0.1, outputscale_constraint: 1.e-2} # Implemented as softplus(y), y=0.1xamp and 10xlengthscale
+  kernel: rbf # Type of kernel for the GP layer, 'rbf' or 'matern' or 'matern+rbf'
+  print_model: True # Print the model before training starts
+
+logging:
+  save_predictions: True
+  run_name: test_run  # Can be set to auto
+  tracking_url: ./mlruns
+  high_conf_metrics: False
+  wandb: True
+  project: CAMELYON16  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: ../experiments/agp # Path to the directory where the model checkpoints will be saved
+  model_version: test # Version of the model, according to ./custom_framework/heatmaps/results/model_version.json
+
+seed: 2025   # Seed for everything with the seed_torch function from main.py
+phase: train # train, test
+
+training:
+  max_epochs: 20
+  gpu_index: [1]
+  strategy: auto
+  precision: '32' # 32 or 64 (64 if gpu has enough memory)
+  patience: 200 # Early stopping patience
+  optimizer: adam # [adam, adamw, sgd, lookahead_radam]
+  reg: 1.e-5 # weight decay
+  opt_eps: 1.e-8 # Adam epsilon not implemented currently
+  opt_betas: [0.9, 0.999] # Adam betas, not implemented currently
+  momentum: 0.9 # sgd momentum, doesn't do anything for other optimizers
+  scheduler: lambda # [lambda, cosine, linearcosine]
+  learning_rate: 2.e-4  # 0.0001 reasonable choice
+  # stuff exclusively for lamda scheduler
+  lr_decay_after_epoch: 10    # Tune the decay factors
+  stop_decay_after_epoch: 25
+  stop_decay_lr_value: 2.e-5 # Stop decaying the learning rate after this lr value
+  lr_decay_factor: 0.5
+  min_delta: 1.e-4
+  # stuff exclusively for cosine/linearcosine scheduler
+  min_lr: 1.e-7  # eta_min
+  # stuff exclusively for linearcosine scheduler
+  warmup_epochs: 8 # ~10-20
+  warmup_lr: 1.e-5 # warmup start learning_rate
+  lr_logging_interval: epoch  # Log learning rate ['step', 'epoch', None]
+  lr_logging_frequency: 1 # Log learning rate every n steps/epochs
+  log_weight_decay: True
+
+testing:
+  experiment_ckpt_dir: ../experiments/agp_time/UNIv1_CAM16_lvl2_224_features/0/last.ckpt

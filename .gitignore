@@ -1,0 +1,46 @@
+# Ignore log files
+*.log
+
+# Ignore environment variable files
+.env
+
+# Ignore build directories
+dist/
+build/
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+
+# Ignore coverage reports
+coverage/
+coverage*.json
+
+# Ignore temporary files
+*.tmp
+*.swp
+
+# Ignore wandb files
+src/wandb/
+
+# lightning logs
+src/lightning_logs/
+# Ignore model checkpoints
+experiments/
+
+# Ignore jupyter notebooks
+*.ipynb
+
+sgpmil.egg-info/*
+scripts/model_predictions_bracs.py
+
+
+/*.png

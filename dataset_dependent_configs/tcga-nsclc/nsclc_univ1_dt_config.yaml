@@ -1,0 +1,18 @@
+data:
+  csv_path: /path/to/labels.csv # Path to labels.csv
+  data_root_dir: /path/to/features/ # Path to dir containing h5 and pt files
+  split_dir: /path/to/splits/ # Path to the directory containing the splits
+  feature_extractor: UNIv1 # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
+  print_info: True
+  label_dict: {'LUSC':0, 'LUAD':1} # Dictionary to map labels to integers
+  patient_strat: True
+  num_classes: 2
+  type: binary
+  shape_file: ../images_shapes_lvl0/nsclc_images_shape.txt
+
+logging:
+  feature_extractor: UNIv1_lvl2 # current feature extractor
+  group: agp_univ1 # In the form of model type_feature extractor
+  model_chkpt_dir: ../experiments # Path to the directory where the model checkpoints will be saved
+
+

@@ -1,0 +1,47 @@
+# Core ML
+torch>=2.1
+torchvision>=0.16
+timm
+einops
+gpytorch
+pytopk
+git+https://github.com/oval-group/smooth-topk.git@12c1645f187e2fa0c05f47bf1fe48864d4bd2707
+
+# Transformers support
+transformers
+safetensors
+tokenizers
+
+# Lightning
+pytorch-lightning
+lightning
+lightning-utilities
+
+# General ML / scientific stack
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+seaborn
+h5py
+
+# WSI processing
+openslide-python
+opencv-python-headless
+pillow
+
+# Utilities
+tqdm
+pyyaml
+regex
+requests
+filelock
+packaging
+future
+
+# HF & logging
+huggingface-hub
+wandb
+rich
+gitpython
