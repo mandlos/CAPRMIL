@@ -44,3 +44,9 @@ scripts/model_predictions_bracs.py
 
 
 /*.png
+
+./experiments
+wandb
+./src/wandb
+*/__pycache__/
+*/.ipynb_checkpoints
