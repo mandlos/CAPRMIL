@@ -54,3 +54,5 @@ folds_metrics
 sgpmil.egg-info
 *.tex
 *.csv
+
+model_mixmil.py
