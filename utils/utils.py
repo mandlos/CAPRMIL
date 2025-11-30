@@ -80,7 +80,7 @@ def get_split_loader(split_dataset, training = False, testing = False, weighted 
 	"""
 		return either the validation loader or training loader 
 	"""
-	kwargs = {'num_workers': 16} if device.type == "cuda" else {}
+	kwargs = {'num_workers': 8} if device.type == "cuda" else {}
 	if use_h5:
 		split_dataset.load_from_h5(True)
 		collate_fn = collate_MIL_h5
@@ -197,3 +197,51 @@ def initialize_weights(module):
 			nn.init.constant_(m.weight, 1)
 			nn.init.constant_(m.bias, 0)
 
+
+
+def subsample_train_split(train_split, train_frac=1.0, seed=0):
+    """
+    Subsample a Generic_Split training dataset in-place.
+
+    Args:
+        train_split: Generic_Split
+        train_frac (float): fraction of training samples to keep (0,1]
+        seed (int): random seed for reproducibility
+    """
+    if train_frac >= 1.0:
+        return train_split
+
+    rng = np.random.default_rng(seed)
+
+    n_total = len(train_split)
+    n_select = max(1, int(train_frac * n_total))
+
+    selected_indices = rng.choice(
+        np.arange(n_total),
+        size=n_select,
+        replace=False
+    )
+
+    # Subsample dataframe
+    train_split.slide_data = (
+        train_split.slide_data
+        .iloc[selected_indices]
+        .reset_index(drop=True)
+    )
+
+    # Recompute per-class indices (for WeightedRandomSampler)
+    train_split.slide_cls_ids = [[] for _ in range(train_split.num_classes)]
+    for c in range(train_split.num_classes):
+        train_split.slide_cls_ids[c] = np.where(
+            train_split.slide_data['label'] == c
+        )[0]
+
+    print(
+        f"[DATA] Using {len(train_split)} / {n_total} "
+        f"training slides ({train_frac:.0%})"
+		f"Per-class distribution:\n" 
+		+"\n".join(f"class {c}: {len(train_split.slide_cls_ids[c])} "
+						for c in range(train_split.num_classes))
+    )
+
+    return train_split

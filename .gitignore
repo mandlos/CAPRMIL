@@ -50,3 +50,7 @@ wandb
 ./src/wandb
 */__pycache__/
 */.ipynb_checkpoints
+folds_metrics
+sgpmil.egg-info
+*.tex
+*.csv

@@ -1,7 +1,7 @@
 data:
-  csv_path: /path/to/labels.csv # Path to labels.csv
-  data_root_dir: /path/to/feature/directory/ # Path to the root directory of the dataset
-  split_dir: /path/to/dir/containing/splits/ # Path to the directory containing the splits
+  csv_path: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/panda/filtered_labels.csv # Path to labels.csv
+  data_root_dir: /mnt/features/PANDA/UNIv1_PANDA_20x # Path to the root directory of the dataset
+  split_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/panda/splits/ # Path to the directory containing the splits
   feature_extractor: UNIv1 # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
   print_info: True
   label_dict: {'NC':0, 'G1':1, 'G2':2, 'G3':3, 'G4':4, 'G5':5} # Dictionary to map labels to integers

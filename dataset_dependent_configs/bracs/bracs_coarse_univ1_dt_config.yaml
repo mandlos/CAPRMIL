@@ -1,14 +1,14 @@
 data:
-  csv_path: /path/to/labels.csv # Path to labels.csv
-  data_root_dir: /path/to/directory/containing/features/ # Path to the root directory of the dataset
-  split_dir: /path/to/dir/containing/splits/ # Path to the directory containing the splits
+  csv_path: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/coarse/labels.csv # Path to labels.csv
+  data_root_dir: /mnt/features/BRACS/20x_224px_0px_overlap/UNIv1_BRACS_20x # Path to the root directory of the dataset
+  split_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/coarse/splits/ # Path to the directory containing the splits
   feature_extractor: UNIv1 # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
   print_info: True
   label_dict: {'AT':0, 'BT':1, 'MT':2} # Dictionary to map labels to integers
   patient_strat: False
   num_classes: 3
   type: coarse # binary, isup, gleason_score, coarse
-  shape_file: ../images_shapes_lvl0/bracs_images_shape.txt
+  shape_file: /home/ubuntu/Projects/TransolverMIL/images_shapes_lvl0/bracs_images_shape.txt
 
 logging:
   feature_extractor: UNIv1_20x # current feature extractor

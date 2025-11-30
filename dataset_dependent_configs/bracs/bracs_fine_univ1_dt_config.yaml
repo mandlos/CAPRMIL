@@ -1,0 +1,15 @@
+data:
+  csv_path: ~/Code/custom_framework/dataset_dependent_configs/bracs/fine/labels.csv # Path to labels.csv
+  data_root_dir: /mnt/features/BRACS/20x_224px_0px_overlap/UNIv1_BRACS_20x # Path to the root directory of the dataset
+  split_dir: ~/Code/custom_framework/dataset_dependent_configs/bracs/fine/splits/ # Path to the directory containing the splits
+  feature_extractor: UNIv1 # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
+  print_info: True
+  label_dict: {'ADH':0, 'DCIS':1, 'FEA':2, 'IC':3, 'N':4, 'PB':5, 'UDH':6} # Dictionary to map labels to integers
+  patient_strat: False
+  num_classes: 7
+  type: fine # binary, isup, gleason_score, coarse
+  shape_file: ../images_shapes_lvl0/bracs_images_shape.txt
+
+logging:
+  feature_extractor: UNIv1_20x # current feature extractor
+  group: univ1 # In the form of model type_feature extractor

@@ -8,7 +8,7 @@ import ast
 import shutil
 import argparse
 import sys
-sys.path.append('/path/to/project/directory')  # Adjust this path to your project directory i.e. parent dir of src
+sys.path.append('/home/ubuntu/Projects/TransolverMIL')  # Adjust this path to your project directory i.e. parent dir of src
 
 # --- Third Party ---
 import torch
@@ -27,11 +27,31 @@ from custom_utils.general_calibration_error import gce
 from src.main import init_loaders, determine_model_class, load_configs
 
 # Use LaTeX for text rendering
-plt.rc('text', usetex=True)
+plt.rc('text', usetex=False)
 # Set Computer Modern as the font family
 plt.rc('font', family='serif', serif=['cm'])
 # Cuda or cpu
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def extract_dataset_name(config):
+    """
+    Extract dataset name from data_root_dir.
+    Expected: /mnt/features/CAMELYON16_dataset/UNIv1_CAM16_lvl2_224_features
+              -> CAMELYON16
+    """
+    root = pathlib.Path(config['data']['data_root_dir'])
+    return root.name.split("_")[1].upper()
+
+
+def extract_model_version(config):
+    """
+    Extract model version from checkpoint path.
+    Expected: .../model_version/... -> model_version
+    """
+    ckpt = pathlib.Path(config['testing']['experiment_ckpt_dir'])
+    version = ckpt.parents[2].name
+    return version
 
 
 def get_model_path(config, fold):
@@ -136,12 +156,24 @@ def parse_k_folds(k_folds_str):
         raise argparse.ArgumentTypeError("k_folds must be a list of integers, e.g., [0, 1, 2, 3]")
 
 def save_metrics(results, config, args):
-    savedir = pathlib.Path(args.savedir) / config['data']['dataset_config'].split('/')[-1].split('_')[1].upper() / args.config.split('/')[-2] / config['logging']['model_version']
+    dataset_name = extract_dataset_name(config)
+    feature_extractor = config['data']['feature_extractor'].upper()
+    model_family = args.config.split('/')[-2]
+    model_version = extract_model_version(config)
+
+    savedir = (
+        pathlib.Path(args.savedir)
+        / dataset_name
+        / feature_extractor
+        / model_family
+        / model_version
+    )
     savedir.mkdir(parents=True, exist_ok=True)
+
 
     # Create DataFrame from results
     metrics_df = pd.DataFrame.from_dict(results, orient='index')
-    metrics_df.to_csv(savedir / f"{config['logging']['model_version']}_metrics_per_fold.csv", index_label="fold")
+    metrics_df.to_csv(savedir / f"{model_version}_metrics_per_fold.csv", index_label="fold")
 
     # Calculate mean and std for each metric
     metrics_summary_stats = metrics_df.agg(['mean', 'std']).transpose()
@@ -158,14 +190,24 @@ def save_metrics(results, config, args):
     metrics_summary_df = pd.DataFrame(summary_data)
 
     # Save the summary DataFrame to a CSV file
-    metrics_summary_df.to_csv(savedir / f"{config['logging']['model_version']}_metrics_summary.csv", index=False)
+    metrics_summary_df.to_csv(savedir / f"{model_version}_metrics_summary.csv", index=False)
 
 def main(args):
     print(f'Loading config file...')
     config = load_configs(args)
     config_fpath = pathlib.Path(args.config)
-    savedir = pathlib.Path(args.savedir) / config['data']['dataset_config'].split('/')[-1].split('_')[1].upper() / config_fpath.parent.name / config['logging']['model_version']
-    
+    dataset_name = extract_dataset_name(config)            # CAM16 / CAMELYON16
+    feature_extractor = config['data']['feature_extractor'].upper()  # UNIv1
+    model_family = config_fpath.parent.name                # SGPMIL
+    model_version = extract_model_version(config)          # hdims256_cluster64_mlp2
+
+    savedir = (
+        pathlib.Path(args.savedir)
+        / dataset_name
+        / feature_extractor
+        / model_family
+        / model_version
+    )    
     if savedir.exists() and savedir.is_dir():
         shutil.rmtree(savedir)
     
@@ -194,14 +236,14 @@ def main(args):
 
         total_cm += cm
 
-        cm_savedir = pathlib.Path(savedir) / f'cm_{config["logging"]["model_version"]}_fold{fold}.png'
+        cm_savedir = pathlib.Path(savedir) / f'cm_{model_version}_fold{fold}.png'
         plot_cm(cm, cm_savedir)
     
     print('Saving results...')
 
     save_metrics(results, config, args)
     print('Plotting total confusion matrix...')
-    cm_savedir = cm_savedir.parent / f'cm_{config["logging"]["model_version"]}_total.png'
+    cm_savedir = cm_savedir.parent / f'cm_{model_version}_total.png'
     plot_cm(total_cm, cm_savedir)
 
     print('Done!')

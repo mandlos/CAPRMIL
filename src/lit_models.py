@@ -453,16 +453,16 @@ class LitDetModel(pl.LightningModule):
                 return self.model(x.unsqueeze(0), bag_mode='abnormal')
         elif self.config['model']['attention'].startswith('bayesmil'):
             validation = not self.training
-            if self.config['logging']['model_version'] in ['v2', 'v3', 'v4', 'v5', 'v6']:   # v2 is apcrf
-                coords = batch['coords']
-                w, h = batch['w'], batch['h']
-                return self.model(h=x, coords=coords, height=h[0], width=w[0], slide_label=y, validation=validation)
-            elif self.config['logging']['model_version']=='v1': # v1 is sdpr or enc
-                return self.model(h=x, slide_label=y, validation=validation)
-            elif self.config['logging']['model_version']=='v0': # v0 is vis
-                return self.model(h=x, validation=validation)
-            else:
-                raise ValueError('BayesMIL Model not supported')
+            # if self.config['logging']['model_version'] in ['v2', 'v3', 'v4', 'v5', 'v6']:   # v2 is apcrf
+            coords = batch['coords']
+            w, h = batch['w'], batch['h']
+            return self.model(h=x, coords=coords, height=h[0], width=w[0], slide_label=y, validation=validation)
+            # elif self.config['logging']['model_version']=='v1': # v1 is sdpr or enc
+            #     return self.model(h=x, slide_label=y, validation=validation)
+            # elif self.config['logging']['model_version']=='v0': # v0 is vis
+            #     return self.model(h=x, validation=validation)
+            # else:
+            #     raise ValueError('BayesMIL Model not supported')
         elif self.config['model']['attention'] in ['abmil', 'transmil']:
             return self.model(x)
         else:

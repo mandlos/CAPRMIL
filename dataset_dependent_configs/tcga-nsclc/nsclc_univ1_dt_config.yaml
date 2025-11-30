@@ -1,7 +1,7 @@
 data:
-  csv_path: /path/to/labels.csv # Path to labels.csv
-  data_root_dir: /path/to/features/ # Path to dir containing h5 and pt files
-  split_dir: /path/to/splits/ # Path to the directory containing the splits
+  csv_path: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/tcga-nsclc/filtered_labels.csv # Path to labels.csv
+  data_root_dir: /mnt/features/TCGA_datasets/NSCLC/NSCLC_UNI_10x_coords/UNIv1_NSCLC_10x_features # Path to dir containing h5 and pt files
+  split_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/tcga-nsclc/splits # Path to the directory containing the splits
   feature_extractor: UNIv1 # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
   print_info: True
   label_dict: {'LUSC':0, 'LUAD':1} # Dictionary to map labels to integers
@@ -12,7 +12,7 @@ data:
 
 logging:
   feature_extractor: UNIv1_lvl2 # current feature extractor
-  group: agp_univ1 # In the form of model type_feature extractor
+  group: univ1 # In the form of model type_feature extractor
   model_chkpt_dir: ../experiments # Path to the directory where the model checkpoints will be saved
 
 

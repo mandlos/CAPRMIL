@@ -1,10 +1,12 @@
 data:
-  dataset_config: ../dataset_dependent_configs/cam16/cam_univ1_dt_config.yaml
-  artifact_dir: ../dataset_dependent_configs/cam16/out/cam_univ1_lvl2
+  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/cam16/cam_univ1_dt_config.yaml
+  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/cam16/out/cam_univ1_lvl2
   data_dims: 1024    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
   num_classes: 2
   use_h5: True
-  split: 4
+  train_frac: 1.0 # fraction of training data to use [.1, .10, .25, .50, .75, 1.0]
+  seed_mode: False # for multiple seed experiments-not used with k-fold
+  split: 0 # or fold number for cross-validation
 
 model:
   attention: sgpmil
@@ -35,11 +37,11 @@ logging:
   high_conf_metrics: False
   wandb: True
   project: CAMELYON16  # Name of the project in wandb i.e. Dataset name
-  model_ckpt_dir: ../experiments/sgpmil # Path to the directory where the model checkpoints will be saved
+  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/sgpmil # Path to the directory where the model checkpoints will be saved
   model_version: v0 # Version of the model, according to ./custom_framework/heatmaps/results/model_version.json
 
 seed: 2025   # Seed for everything with the seed_torch function from main.py
-phase: test # train, test
+phase: train # train, test
 
 training:
   max_epochs: 30

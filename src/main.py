@@ -22,7 +22,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import src
 from src.lit_models import LitGPModel, LitDetModel, LitTSMIL
 from data.dataset_generic import Generic_MIL_Dataset
-from utils.utils import get_split_loader
+from utils.utils import get_split_loader, subsample_train_split
 from custom_utils.utils import EpochTimingCallback
 
 # --- Environment Setup ---
@@ -49,6 +49,10 @@ def init_loaders(config):
         from_id=False, 
         csv_path='{}/splits_{}.csv'.format(config['data']['split_dir'], config['data']['split'])
     )
+    # Subsample train dataset if train_frac < 1.0
+    if config['data']['train_frac'] < 1.0:
+        train_split = subsample_train_split(train_split, train_frac=config['data']['train_frac'])
+
     train_loader = get_split_loader(train_split, training=True, testing=False, weighted=True, use_h5=config['data']['use_h5'])
     val_loader = get_split_loader(val_split, testing=False, use_h5=config['data']['use_h5'])
     test_loader = get_split_loader(test_split, testing=False, use_h5=config['data']['use_h5'])
@@ -103,9 +107,14 @@ def init_callbacks(config):
     epoch_timing = EpochTimingCallback()
 
     # Model checkpoint
-    dpath = os.path.join(config['logging']['model_ckpt_dir']+'_'+config['logging']['model_version'],
-                            config['data']['data_root_dir'].split('/')[-1],
-                            str(config['data']['split']))
+    if config['data']['seed_mode']:
+        dpath = os.path.join(config['logging']['model_ckpt_dir']+'_'+config['logging']['model_version'],
+                        config['data']['data_root_dir'].split('/')[-1],
+                        str(config['seed']))
+    else:
+        dpath = os.path.join(config['logging']['model_ckpt_dir']+'_'+config['logging']['model_version'],
+                                config['data']['data_root_dir'].split('/')[-1],
+                                str(config['data']['split']))
 
     if config['phase']=='train':
         if os.path.exists(dpath):
