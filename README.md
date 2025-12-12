@@ -5,6 +5,16 @@ This repository contains the official implementation and supporting materials fo
 **CAPRMIL: Context-Aware Patch Representations for Multiple Instance Learning**  
 *Under review – MIDL 2026*
 
+![CAPRMIL Framework](figures/CAPRMIL_block.png)
+
+**Figure:** Overall CAPRMIL architecture. Whole Slide Images are tessellated into patches and encoded using a frozen backbone. After a linear projection, a stack of CAPRMIL Blocks injects global context into patch embeddings. A MIL aggregator and classifier then produce the slide-level prediction.
+
+## CAPRMIL Attention Mechanism
+
+![CAPRMIL Attention](figures/CAPRMIL_attn.png)
+
+**Figure:** CAPRMIL Attention head. Patch embeddings are softly assigned to a small number of context-aware clusters, aggregated into global tokens, processed via multi-head self-attention, and broadcast back to the patch space to produce context-aware representations.
+
 ---
 
 ## Overview
@@ -23,15 +33,6 @@ Paired with a simple **Mean MIL aggregator**, CAPRMIL:
 
 These results demonstrate that **learning context-aware instance representations prior to aggregation** is a powerful and scalable alternative to complex attention-based pooling.
 
----
-
-## CAPRMIL Framework
-
-![CAPRMIL Framework](figures/CAPRMIL_block.png)
-
-**Figure:** Overall CAPRMIL architecture. Whole Slide Images are tessellated into patches and encoded using a frozen backbone. After a linear projection, a stack of CAPRMIL Blocks injects global context into patch embeddings. A MIL aggregator and classifier then produce the slide-level prediction.
-
----
 
 ## Key Contributions
 
@@ -48,14 +49,6 @@ CAPRMIL introduces the following key advances:
 
 4. **High parameter and compute efficiency**  
    CAPRMIL achieves competitive performance while using significantly fewer parameters, FLOPs, and GPU memory than transformer-based MIL models.
-
----
-
-## CAPRMIL Attention Mechanism
-
-![CAPRMIL Attention](figures/CAPRMIL_attn.png)
-
-**Figure:** CAPRMIL Attention head. Patch embeddings are softly assigned to a small number of context-aware clusters, aggregated into global tokens, processed via multi-head self-attention, and broadcast back to the patch space to produce context-aware representations.
 
 ---
 
