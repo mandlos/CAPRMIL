@@ -66,25 +66,26 @@ The repository is organized as follows:
 
 ### Installation
 
+#### Requirements
+
+Before running the batch experiment scripts, ensure that:
+- The CAPRMIL conda environment is activated
+- `yq` is installed (used to programmatically modify YAML configuration files)
+- A CUDA-enabled GPU is available
+
+If `yq` is not installed:
+```bash
+sudo apt-get install yq
+# or
+pip install yq
+```
+
 Option 1 – using pip:
 ```bash
 pip install -r requirements.txt
 ```
 
 Option 2 - using conda:
-```bash
-conda env create -f environment.yaml
-conda activate caprmil
-```
-
-### Installation
-
-Option 1 – using pip:
-```bash
-pip install -r requirements.txt
-```
-
-Option 2 – using conda:
 ```bash
 conda env create -f environment.yaml
 conda activate caprmil
@@ -113,27 +114,6 @@ CUDA_VISIBLE_DEVICES=0 python eval.py \
     --config /path/to/config.yaml \
     --savedir /path/to/save/metrics \
     --k_folds [0,1,2,3,4,5,6,7,8,9]
-```
-
----
-
-### Requirements
-
-Before running the batch experiment scripts, ensure that:
-- The CAPRMIL conda environment is activated
-- `yq` is installed (used to programmatically modify YAML configuration files)
-- A CUDA-enabled GPU is available
-
-Activate the environment:
-```bash
-conda activate caprmil
-```
-
-If `yq` is not installed:
-```bash
-sudo apt-get install yq
-# or
-pip install yq
 ```
 
 ---
