@@ -55,6 +55,9 @@ sgpmil.egg-info
 *.tex
 *.csv
 
+
 model_mixmil.py
 mixmil_ckpts
-scripts/model_predictions.py
+./scripts/model_predictions.py
+./scripts/run_experiments.sh
+./scripts/run_experiments_competition.sh

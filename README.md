@@ -13,7 +13,7 @@ This repository contains the official implementation and supporting materials fo
 
 ![CAPRMIL Attention](figures/CAPRMIL_attn.png)
 
-**Figure:** CAPRMIL Attention head. Patch embeddings are softly assigned to a small number of context-aware clusters, aggregated into global tokens, processed via multi-head self-attention, and broadcast back to the patch space to produce context-aware representations.
+**Figure:** CAPRMIL Attention head. Patch embeddings are softly assigned to a small number of context-aware clusters, aggregated into global tokens, processed via multi-head self-attention, and broadcasted back to the patch space to produce context-aware representations.
 
 ---
 
@@ -58,7 +58,7 @@ The repository is organized as follows:
 ```
 ├── configs # Model and dataset configuration files
 ├── dataset_dependent # Dataset-specific splits and related configurations
-├── scripts # Evaluation scripts (slide-level)
+├── scripts # Evaluation scripts (slide-level) and shell scripts for running multiple experiments
 ├── src # Source code (models, training, and validation logic)
 │ └── main.py # Entry point for training and validation using PyTorch Lightning
 └── README.md
@@ -77,22 +77,66 @@ conda env create -f environment.yaml
 conda activate caprmil
 ```
 
+### Installation
+
+Option 1 – using pip:
+```bash
+pip install -r requirements.txt
+```
+
+Option 2 – using conda:
+```bash
+conda env create -f environment.yaml
+conda activate caprmil
+```
+
+---
+
 ## Training
 
-To train a model using one of the provided configurations:
+To train a single model using one of the provided configuration files:
 
 ```bash
 python src/main.py --config /path/to/config.yaml
 ```
 
+This command launches a single training run using slide-level supervision and the settings defined in the specified YAML configuration file.
+
+---
+
 ## Evaluation
-Slide-level evaluation:
+
+### Slide-level evaluation
+
 ```bash
 CUDA_VISIBLE_DEVICES=0 python eval.py \
     --config /path/to/config.yaml \
     --savedir /path/to/save/metrics \
     --k_folds [0,1,2,3,4,5,6,7,8,9]
 ```
+
+---
+
+### Requirements
+
+Before running the batch experiment scripts, ensure that:
+- The CAPRMIL conda environment is activated
+- `yq` is installed (used to programmatically modify YAML configuration files)
+- A CUDA-enabled GPU is available
+
+Activate the environment:
+```bash
+conda activate caprmil
+```
+
+If `yq` is not installed:
+```bash
+sudo apt-get install yq
+# or
+pip install yq
+```
+
+---
 
 ## Paper
 If you find this work useful or relevant, please cite our paper (citation details will be added after review).

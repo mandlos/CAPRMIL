@@ -12,7 +12,7 @@ BASE_CFG="${PROJECT_ROOT}/configs/TSMIL/cam_uni_model_config.yaml"
 # 2. Experiment grid
 # -------------------------
 HIDDEN_DIMS=(128)
-CLUSTERS=(16)
+CLUSTERS=(4)
 MLP_RATIOS=(4)
 FOLD=(0 1 2 3 4)
 # USE_TEMPERATURE=(false)
