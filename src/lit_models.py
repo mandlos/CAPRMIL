@@ -26,7 +26,7 @@ from src.model_bmil import probabilistic_MIL_Bayes_spvis as BMIL_spvis
 from src.model_bmil_subtyping import probabilistic_MIL_Bayes_spvis as BMIL_spvis_subtyping
 from src.model_bmil import get_ard_reg_vdo
 from src.model_meanmil import MeanMIL
-from src.model_tsmil import TSMIL
+from src.model_caprmil import CAPRMIL
 from src.gp_models import SGPMIL, AGP
 
 
@@ -865,7 +865,7 @@ class LitDetModel(pl.LightningModule):
         return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler_config}
 
 
-class LitTSMIL(pl.LightningModule):
+class LitCAPRMIL(pl.LightningModule):
     def __init__(self, config: Dict = {}):
         super().__init__()
         self.config = config

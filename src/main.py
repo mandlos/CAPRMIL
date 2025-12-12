@@ -1,5 +1,5 @@
 # Example usage:
-# conda activate agp_torch && python main.py --c ../configs/SGPMIL/cam_uni_model_config.yaml
+# conda activate caprmil && python main.py --c /path/to/config.yaml
 # --- Standard Library ---
 import os
 import sys
@@ -20,7 +20,7 @@ from lightning.pytorch.loggers import WandbLogger
 # --- Project/Local Modules ---
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import src
-from src.lit_models import LitGPModel, LitDetModel, LitTSMIL
+from src.lit_models import LitGPModel, LitDetModel, LitCAPRMIL
 from data.dataset_generic import Generic_MIL_Dataset
 from utils.utils import get_split_loader, subsample_train_split
 from custom_utils.utils import EpochTimingCallback
@@ -71,7 +71,7 @@ def init_model(config, train_loader, val_loader):
     if config['model']['attention'] in ['clam', 'transmil', 'abmil', 'dgrmil', 'bayesmil-spvis', 'meanmil']:
         model = LitDetModel(config)
     if config['model']['attention'] == 'tsmil':
-        model = LitTSMIL(config)
+        model = LitCAPRMIL(config)
 
     if model is None:
         raise ValueError("Model initialization failed. Check model type in config.")
@@ -172,7 +172,7 @@ def determine_model_class(config):
                                           'bayesmil', 'bayesmil-spvis', 'meanmil']:
         model_class = LitDetModel
     elif config['model']['attention'] == 'tsmil':
-        model_class = LitTSMIL
+        model_class = LitCAPRMIL
     else:
         raise ValueError("Unknown model type in configuration")
     return model_class

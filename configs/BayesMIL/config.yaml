@@ -1,21 +1,18 @@
 data:
-  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/bracs_coarse_conch_dt_config.yaml
-  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/out/bracs_coarse_conch_lvl2
-  data_dims: 512    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
-  num_classes: 3
+  dataset_config: /path/to/dataset/config.yaml
+  artifact_dir: /path/to/artifact/directory
+  data_dims: 1024 # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
   use_h5: True
   patch_size: 224
-  train_frac: 1.0 # fraction of training data to use [0.10, 0.25, 0.50, 0.75, 1.0]
-  seed_mode: True # for multiple seed experiments-not used with k-fold
-  split: 0 # or fold number for cross-validation
+  split: 3 # up to 3 for PANDA (can be up to 9)
 
 model:
   attention: bayesmil-spvis # [clam, transmil, mil, dgrmil, bayesmil-spvis]
   model_size: big # [big, small]
-  feature_extractor: conch # [resnet50, conch, univ1, hoptimus]
+  feature_extractor: univ1_lvl2 # [resnet50, conch, univ1, hoptimus]
   gate: True
   topk: 1 
-  dropout: 0.4 # bag classifier dropout rate
+  dropout: 0.5 # bag classifier dropout rate
   bag_loss_fn: 'ce' # [ce, svm, bcewlogits] for abmil, transmil, clam, does not work for dgrmil
   attn_mode: null
   variant: null # [sb, mb] for single or multi branch
@@ -35,16 +32,16 @@ logging:
   tracking_url: ./mlruns
   high_conf_metrics: False
   wandb: True
-  project: BRACS  # Name of the project in wandb i.e. Dataset name
-  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/bayesmil_spvis # Path to the directory where the model checkpoints will be saved
-  model_version: v2 # v0: vis, v1: sdpr/enc, v2, v3,v4,v5,v6: apcrf (different seeds)
+  project: PANDA  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: /path/to/save/experiment_ckpts # Path to the directory where the model checkpoints will be saved
+  model_version: v2 # v0: vis, v1: sdpr/enc, v2: apcrf
 
-seed: 2029 # Seed for everything v2: 2025, v3: 2026, v4: 2027, v5: 2028, v6: 2029
+seed: 2025   # Seed for everything with the seed_torch function from main.py
 phase: train # train, test
 
 training:
   max_epochs: 30
-  gpu_index: [4]
+  gpu_index: [1]
   strategy: auto
   precision: '32' # 32 or 64 (64 if gpu has enough memory)
   patience: 20 # Early stopping patience
@@ -71,5 +68,5 @@ training:
   log_weight_decay: True
 
 testing:
-  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/bayesmil_spvis_frac1.0/CONCHv1_BRACS_20x/2025/last.ckpt
+  experiment_ckpt_dir: /path/to/model.ckpt
 

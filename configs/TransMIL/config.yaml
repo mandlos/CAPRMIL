@@ -1,18 +1,16 @@
 data:
-  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/cam16/cam_univ1_dt_config.yaml
-  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/cam16/out/cam_univ1_lvl2
-  data_dims: 1024    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
-  num_classes: 2
+  dataset_config: /path/to/dataset/config.yaml
+  artifact_dir: /path/to/artifact/directory
+  data_dims: 1024 # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
   use_h5: True
-  train_frac: 1.0 # fraction of training data to use [.1, .10, .25, .50, .75, 1.0]
-  seed_mode: False # for multiple seed experiments-not used with k-fold
-  split: 0 # or fold number for cross-validation
+  num_classes: 6
+  split: 3 # Split number, must be int up to 3 currently implemented
 
 model:
   attention: transmil # [clam, transmil, mil]
   variant: null # [sb, mb] for single or multi branch
   model_size: null
-  feature_extractor: univ1_lvl2 # [resnet50, conch, univ1, hoptimus]
+  feature_extractor: univ1_20x # [resnet50, conch, univ1, hoptimus]
   gate: null
   embed_dim: 1024
   dropout: null
@@ -21,7 +19,7 @@ model:
   bag_loss_fn: 'ce' # [ce, svm]
   bag_weight: null
   subtyping: null
-  print_model: False
+  print_model: True
 
 logging:
   save_predictions: True
@@ -29,26 +27,26 @@ logging:
   tracking_url: ./mlruns
   high_conf_metrics: False
   wandb: True
-  project: CAMELYON16  # Name of the project in wandb i.e. Dataset name
-  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/transmil # Path to the directory where the model checkpoints will be saved
-  model_version: gpu_util
+  project: PANDA  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: /path/to/save/experiment_ckpts # Path to the directory where the model checkpoints will be saved
+  model_version: v0
 
 seed: 2024   # Seed for everything with the seed_torch function from main.py
 phase: train # train, test
 
 training:
-  max_epochs: 10
-  gpu_index: [5]
+  max_epochs: 30
+  gpu_index: [0]
   strategy: auto
   precision: '32' # 32 or 64 (64 if gpu has enough memory)
-  patience: 200 # Early stopping patience
-  optimizer: lookahead_radam # [adam, sgd, lookahead_radam]
-  reg: 1.e-5 # weight decay
+  patience: 20 # Early stopping patience
+  optimizer: adamw # [adam, sgd, lookahead_radam]
+  reg: 5.e-5 # weight decay
   opt_eps: 1.e-8 # Adam epsilon not implemented currently
   opt_betas: [0.9, 0.999] # Adam betas, not implemented currently
   momentum: null 
-  scheduler: lambda # [lamda, cosine, linearcosine]
-  learning_rate: 2.e-4  # 0.0001 reasonable choice
+  scheduler: cosine # [lamda, cosine, linearcosine]
+  learning_rate: 1.e-4  # 0.0001 reasonable choice
   # stuff exclusively for lamda scheduler
   lr_decay_after_epoch: 40    # Tune the decay factors
   stop_decay_after_epoch: 41
@@ -58,12 +56,12 @@ training:
   # stuff exclusively for cosine/linearcosine scheduler
   min_lr: 1.e-5
   # stuff exclusively for linearcosine scheduler
-  warmup_epochs: 20
+  warmup_epochs: 5
   warmup_lr: 1.e-5
   lr_logging_interval: epoch  # Log learning rate ['step', 'epoch', None]
   lr_logging_frequency: 1 # Log learning rate every n steps/epochs
   log_weight_decay: True
 
 testing:
-  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/transmil_frac1./UNIv1_CAM16_lvl2_224_features/0/last.ckpt
+  experiment_ckpt_dir: /path/to/model.ckpt
 

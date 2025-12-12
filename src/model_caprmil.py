@@ -2,24 +2,6 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
-# class MILAggregator(nn.Module):
-#     """
-#     MIL aggregation heads. Currently mean aggregation only.
-#     """
-#     def __init__(self, mode='mean'):
-#         super().__init__()
-#         self.mode = mode
-    
-#     def forward(self, x):
-#         """
-#         x: [B, N, D]
-#         returns: [B, D]
-#         """
-#         if self.mode == 'mean':
-#             return x.mean(dim=1)
-#         else:
-#             raise NotImplementedError(f"Aggregator mode {self.mode} not implemented.")
-
 class MILAggregator(nn.Module):
     """
     MIL aggregation heads:
@@ -276,7 +258,7 @@ class TransolverBlock(nn.Module):
 
         return x
 
-class TSMIL(nn.Module):
+class CAPRMIL(nn.Module):
     """
     Full MIL model:
         Patch embeddings → L × TransolverBlock → MIL aggregator → Bag logits

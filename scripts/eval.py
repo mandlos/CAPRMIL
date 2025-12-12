@@ -1,5 +1,5 @@
 '''
-CUDA_VISIBLE_DEVICES=0 python eval.py --config ../configs/SGPMIL/cam_uni_model_config.yaml --savedir ../folds_metrics --k_folds [0,1,2,3,4,5,6,7,8,9]
+CUDA_VISIBLE_DEVICES=0 python eval.py --config /path/to/config.yaml --savedir /path/to/save/dir --k_folds [0,1,2,3,4,5,6,7,8,9]
 '''
 
 # --- Standard Library ---
@@ -8,7 +8,7 @@ import ast
 import shutil
 import argparse
 import sys
-sys.path.append('/home/ubuntu/Projects/TransolverMIL')  # Adjust this path to your project directory i.e. parent dir of src
+sys.path.append('/path/to/parent/dir')  # Adjust this path to your project directory i.e. parent dir of src
 
 # --- Third Party ---
 import torch
@@ -22,7 +22,7 @@ import tqdm
 
 # --- Project/Local Modules ---
 import src
-from src.lit_models import LitDetModel, LitGPModel, LitTSMIL
+from src.lit_models import LitDetModel, LitGPModel, LitCAPRMIL
 from custom_utils.general_calibration_error import gce
 from src.main import init_loaders, determine_model_class, load_configs
 
@@ -99,7 +99,7 @@ def evaluate(model, test_loader, config):
                 probs.append(model_out['y_hat'].cpu())
                 y.append(Y.cpu())
                 y_hat.append(model_out['y_hat'].argmax(dim=-1).cpu())
-            elif isinstance(model, LitTSMIL):
+            elif isinstance(model, LitCAPRMIL):
                 model_out = model(batch)
                 Y_prob = model_out['Y_prob'].cpu()
                 probs.append(Y_prob)

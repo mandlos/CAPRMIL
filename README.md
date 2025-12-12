@@ -65,7 +65,16 @@ The repository is organized as follows:
 ```
 
 ### Installation
+Option 1 – using pip:
+```bash
+pip install -r requirements.txt
+```
 
+Option 2 - using conda:
+```bash
+conda env create -f environment.yaml
+conda activate caprmil
+```
 #### Requirements
 
 Before running the batch experiment scripts, ensure that:
@@ -78,17 +87,6 @@ If `yq` is not installed:
 sudo apt-get install yq
 # or
 pip install yq
-```
-
-Option 1 – using pip:
-```bash
-pip install -r requirements.txt
-```
-
-Option 2 - using conda:
-```bash
-conda env create -f environment.yaml
-conda activate caprmil
 ```
 
 ---
