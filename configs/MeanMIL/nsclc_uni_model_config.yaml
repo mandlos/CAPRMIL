@@ -1,0 +1,54 @@
+data:
+  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/tcga-nsclc/nsclc_univ1_dt_config.yaml
+  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/tcga-nsclc/out/nsclc_univ1_10x
+  data_dims: 1024    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
+  num_classes: 2
+  use_h5: True
+  train_frac: 1.0 # fraction of training data to use [.1, .10, .25, .50, .75, 1.0]
+  seed_mode: False # for multiple seed experiments-not used with k-fold
+  split: 0 # or fold number for cross-validation [0-3]
+
+model:
+  attention: meanmil            # tell main.py to load meanmil
+  hidden_dim: 128             # MUST match data.data_dims
+  bag_loss_fn: ce
+  instance_loss_fn: none
+  print_model: True
+
+logging:
+  save_predictions: True
+  run_name: test_run  # Can be set to auto
+  tracking_url: ../mlruns
+  high_conf_metrics: False
+  wandb: True
+  project: NSCLC  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/meanmil # Path to the directory where the model checkpoints will be saved
+  model_version: v0 # Version of the model, according to ./custom_framework/heatmaps/results/model_version.json
+
+seed: 2025   # Seed for everything with the seed_torch function from main.py
+phase: train # train, test
+
+training:
+  max_epochs: 50
+  gpu_index: [0]
+  strategy: auto
+  precision: '32'
+  patience: 50
+
+  optimizer: adamw
+  learning_rate: 2.e-4
+  reg: 1.e-5
+  momentum: 0.9
+
+  scheduler: cosine     # or cosine
+  min_delta: 1.e-4
+  min_lr: 1.e-7
+  warmup_epochs: 6
+  warmup_lr: 1.e-5
+
+  lr_logging_interval: epoch
+  lr_logging_frequency: 1
+  log_weight_decay: True
+
+testing:
+  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/meanmil_frac1.0/UNIv1_NSCLC_10x_features/0/last.ckpt

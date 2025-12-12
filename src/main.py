@@ -24,6 +24,8 @@ from src.lit_models import LitGPModel, LitDetModel, LitTSMIL
 from data.dataset_generic import Generic_MIL_Dataset
 from utils.utils import get_split_loader, subsample_train_split
 from custom_utils.utils import EpochTimingCallback
+from utils.gpu_util_callback import PeakGPUMemoryCallback
+from utils.params_callback import TrainableParamsCallback
 
 # --- Environment Setup ---
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -66,7 +68,7 @@ def init_model(config, train_loader, val_loader):
         print('\nAttention GP model')
         model = LitGPModel(config, num_training_points=len(train_loader.dataset), 
                            num_val_points=len(val_loader.dataset))
-    if config['model']['attention'] in ['clam', 'transmil', 'abmil', 'dgrmil', 'bayesmil-spvis']:
+    if config['model']['attention'] in ['clam', 'transmil', 'abmil', 'dgrmil', 'bayesmil-spvis', 'meanmil']:
         model = LitDetModel(config)
     if config['model']['attention'] == 'tsmil':
         model = LitTSMIL(config)
@@ -115,6 +117,12 @@ def init_callbacks(config):
         dpath = os.path.join(config['logging']['model_ckpt_dir']+'_'+config['logging']['model_version'],
                                 config['data']['data_root_dir'].split('/')[-1],
                                 str(config['data']['split']))
+    
+    # Peak GPU utilization callback
+    gpu_mem_cb = PeakGPUMemoryCallback()
+    
+    # Trainable params callback
+    params_cb = TrainableParamsCallback()
 
     if config['phase']=='train':
         if os.path.exists(dpath):
@@ -134,7 +142,8 @@ def init_callbacks(config):
                                             save_last=True,
                                             verbose=True)
     
-    return [early_stopping, top_callback, last_epoch_callback, lr_monitor, epoch_timing]
+    return [early_stopping, top_callback, last_epoch_callback, 
+            lr_monitor, epoch_timing, gpu_mem_cb, params_cb]
 
 def get_ckpt_path(config):
     pth = config['testing']['experiment_ckpt_dir']
@@ -160,7 +169,7 @@ def determine_model_class(config):
     if config['model']['attention'] in ['sgpmil', 'agp']:
         model_class = LitGPModel
     elif config['model']['attention'] in ['clam', 'transmil', 'abmil', 'dgrmil', 
-                                          'bayesmil', 'bayesmil-spvis']:
+                                          'bayesmil', 'bayesmil-spvis', 'meanmil']:
         model_class = LitDetModel
     elif config['model']['attention'] == 'tsmil':
         model_class = LitTSMIL

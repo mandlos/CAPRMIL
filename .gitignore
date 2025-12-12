@@ -56,3 +56,5 @@ sgpmil.egg-info
 *.csv
 
 model_mixmil.py
+mixmil_ckpts
+scripts/model_predictions.py

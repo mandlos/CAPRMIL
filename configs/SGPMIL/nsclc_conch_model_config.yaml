@@ -1,0 +1,75 @@
+data:
+  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/tcga-nsclc/nsclc_conch_dt_config.yaml
+  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/tcga-nsclc/out/nsclc_conch_10x
+  data_dims: 512    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
+  num_classes: 2
+  use_h5: True
+  train_frac: 1.0 # fraction of training data to use [.1, .10, .25, .50, .75, 1.0]
+  seed_mode: False # for multiple seed experiments-not used with k-fold
+  split: 0 # or fold number for cross-validation [0-3]
+
+model:
+  attention: sgpmil
+  attention_multiplication_type: elementwise # [elementwise]
+  jitter: 1.e-4 # Jitter to add in the diagonal for the kernel
+  attn_hl_activation: sigmoid # Activation before gp layer ['sigmoid', 'tanh']
+  post_attention_activation: sigmoid # Activation for the output of the SGP layer ['softmax', 'sigmoid', 'tanh']
+  hidden_layer_size_0: 512 # Must be non-zero
+  hidden_layer_size_1: 384
+  hidden_layer_size_2: 256
+  hidden_layer_size_att: 64  
+  inducing_points: 80    # Should not become excessively large i.e. > 100
+  prior_mean: 0.0      # Prior mean of inducing points distribution p(u), u=f(Z) i.e. a factor that multiplies torch.ones() so if 0.5 then p(u).mean = 0.5
+  prior_variance: 1.    # Vanilla implementation uses N(0, I), multply the variance terms by this factor.
+  kl_factor: 1   # Factor to multiply regularizer kl_loss i.e. KL(q(u)||p(u)).
+  load_model: False # 'None' or path to experiment folder which contains 'models' directory with .h5 files
+  save_model: True # True or False
+  mc_samples: 30 # Number of MC samples from the prior f|u (direct output of the GP layer)
+  kernel_hyperparams: {amp: 0.5, lengthscale_constraint: 0.1, outputscale_constraint: 1.e-2} # Implemented as softplus(y), y=0.1xamp and 10xlengthscale
+  kernel: rbf # Type of kernel for the GP layer, 'rbf' or 'matern' or 'matern+rbf'
+  print_model: True # Print the model before training starts
+  sampling: var # var, cov
+
+logging:
+  save_predictions: True
+  run_name: test_run  # Can be set to auto
+  tracking_url: ../mlruns
+  high_conf_metrics: False
+  wandb: True
+  project: CAMELYON16  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/sgpmil # Path to the directory where the model checkpoints will be saved
+  model_version: gpu_util # Version of the model, according to ./custom_framework/heatmaps/results/model_version.json
+
+seed: 2025   # Seed for everything with the seed_torch function from main.py
+phase: train # train, test
+
+training:
+  max_epochs: 30
+  gpu_index: [1]
+  strategy: auto
+  precision: '32' # 32 or 64 (64 if gpu has enough memory)
+  patience: 20 # Early stopping patience
+  optimizer: adamw # [adam, adamw, sgd, lookahead_radam]
+  reg: 1.e-5 # weight decay
+  opt_eps: 1.e-8 # Adam epsilon not implemented currently
+  opt_betas: [0.9, 0.999] # Adam betas, not implemented currently
+  momentum: 0.9 # sgd momentum, doesn't do anything for other optimizers
+  scheduler: linearcosine # [lambda, cosine, linearcosine]
+  learning_rate: 6.e-4  # 0.0001 reasonable choice
+  # stuff exclusively for lamda scheduler
+  lr_decay_after_epoch: 10    # Tune the decay factors
+  stop_decay_after_epoch: 11
+  stop_decay_lr_value: 2.e-5 # Stop decaying the learning rate after this lr value
+  lr_decay_factor: 0.5
+  min_delta: 1.e-4
+  # stuff exclusively for cosine/linearcosine scheduler
+  min_lr: 1.e-7  # eta_min
+  # stuff exclusively for linearcosine scheduler
+  warmup_epochs: 6 # ~10-20
+  warmup_lr: 1.e-5 # warmup start learning_rate
+  lr_logging_interval: epoch  # Log learning rate ['step', 'epoch', None]
+  lr_logging_frequency: 1 # Log learning rate every n steps/epochs
+  log_weight_decay: True
+
+testing:
+  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/sgpmil_frac1.0/CONCHv1_NSCLC_10x_features/0/last.ckpt

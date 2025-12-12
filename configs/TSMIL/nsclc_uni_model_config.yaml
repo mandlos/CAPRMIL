@@ -4,6 +4,7 @@ data:
   data_dims: 1024    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
   num_classes: 2
   use_h5: True
+  train_frac: 1.0 # fraction of training data to use [.1, .10, .25, .50, .75, 1.0]
   seed_mode: False # for multiple seed experiments-not used with k-fold
   split: 0 # or fold number for cross-validation [0-3]
 
@@ -12,15 +13,16 @@ model:
 
   # ---- TSMIL architecture ----
   embed_dim: 1024             # MUST match data.data_dims
-  hidden_dim: 256 # 256 is good
+  hidden_dim: 128 # 256 is good
   num_heads: 8
   head_dim: 32    # currently overriden s.t. head_dim = hidden_dim // num_heads
-  cluster_num: 16
+  cluster_num: 4
   T_depth: 1              # number of TransolverBlocks
-  mlp_ratio: 1
+  mlp_ratio: 4
   dropout: 0.1
-  aggregator: mean
+  aggregator: mean          # either "mean" | "attn" | "gated_attn"
 
+  use_temperature: True
   # general
   print_model: True
 
@@ -60,4 +62,6 @@ training:
   log_weight_decay: True
 
 testing:
-  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil_hdims256_cluster16_mlp1/UNIv1_NSCLC_10x_features/0/last.ckpt
+  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil_hdims128_cluster4_mlp4_heads8_frac1.0/UNIv1_NSCLC_10x_features/0/last.ckpt
+  # experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil_hdims128_cluster4_mlp4_heads8_frac1.0_attn/UNIv1_NSCLC_10x_features/0/last.ckpt
+  # experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil_hdims128_cluster4_mlp4_heads8_frac1.0_gated_attn/UNIv1_NSCLC_10x_features/0/last.ckpt

@@ -1,16 +1,68 @@
-# **SGPMIL**: Sparse Gaussian Process Multiple Instance Learning
+# **CAPRMIL**: Context-Aware Patch Representations for Multiple Instance Learning
 
-![Model Overview](./figures/sgpmil.png)
+This repository contains the official implementation and supporting materials for **CAPRMIL**, as introduced in our paper:
 
-This repository contains the official implementation and supporting materials for our paper.
+**CAPRMIL: Context-Aware Patch Representations for Multiple Instance Learning**  
+*Under review – MIDL 2026*
+
+---
 
 ## Overview
 
-Sparse Gaussian Process Multiple Instance Learning (SGPMIL) is a probabilistic attention-based framework for Multiple Instance Learning (MIL), designed to provide calibrated predictions and interpretable attention scores at both bag and instance levels. Built upon Sparse Gaussian Processes, SGPMIL addresses key limitations of prior probabilistic MIL approaches, including training instability, poor instance-level localization, and computational inefficiency.
+Context-Aware Patch Representations for Multiple Instance Learning (CAPRMIL) is a **parameter-efficient and scalable MIL framework** for whole-slide image (WSI) analysis in computational pathology.
 
-The framework introduces three key improvements: (1) a learnable feature-scaling term in the variational posterior mean, (2) a relaxed sigmoid-based attention normalization strategy, and (3) a diagonal covariance approximation to accelerate and stabilize training. These modifications enhance optimization over kernel hyperparameters and inducing point locations while preserving predictive performance.
+Unlike prior MIL approaches that rely on increasingly complex aggregation mechanisms to model correlations between instances, CAPRMIL **shifts correlation learning upstream**, directly into the patch representations. Inspired by recent advances in **transformer-based neural PDE solvers**, CAPRMIL produces **rich, morphology-aware patch embeddings** before aggregation, enabling strong performance even with **simple pooling operators**.
 
-SGPMIL is evaluated on a wide range of histopathology benchmarks, including CAMELYON16, TCGA-NSCLC, BRACS, and PANDA, showing strong results in both bag-level classification and instance-level performance. The method provides an efficient, scalable, and theoretically grounded solution for high-dimensional MIL tasks.
+The core idea is to project patch embeddings—extracted using a **frozen backbone**—into a compact set of **global, context-aware tokens** via soft clustering. Multi-head self-attention is then applied **over these tokens instead of the full bag**, yielding **linear computational complexity** with respect to bag size. Global context is subsequently broadcast back to the patch level, producing context-aware representations suitable for downstream MIL aggregation.
+
+Paired with a simple **Mean MIL aggregator**, CAPRMIL:
+- Matches state-of-the-art slide-level performance across multiple public pathology benchmarks  
+- Reduces trainable parameters by **48%–92.8%** compared to prior SOTA MIL methods  
+- Lowers inference FLOPs by **52%–99%**  
+- Achieves strong GPU memory efficiency and faster training times  
+
+These results demonstrate that **learning context-aware instance representations prior to aggregation** is a powerful and scalable alternative to complex attention-based pooling.
+
+---
+
+## CAPRMIL Framework
+
+![CAPRMIL Framework](figures/CAPRMIL_block.png)
+
+**Figure:** Overall CAPRMIL architecture. Whole Slide Images are tessellated into patches and encoded using a frozen backbone. After a linear projection, a stack of CAPRMIL Blocks injects global context into patch embeddings. A MIL aggregator and classifier then produce the slide-level prediction.
+
+---
+
+## Key Contributions
+
+CAPRMIL introduces the following key advances:
+
+1. **Context-aware tokenization for MIL**  
+   Patch embeddings are softly clustered into a small set of morphology-aware tokens, enabling efficient global correlation learning with linear complexity.
+
+2. **Efficient attention via token-level self-attention**  
+   Multi-head self-attention is applied over a compact token set rather than all patches, dramatically reducing computational cost.
+
+3. **Aggregator-agnostic design**  
+   CAPRMIL is independent of the final MIL pooling strategy and can be paired with mean, attention-based, or gated aggregators with minimal overhead.
+
+4. **High parameter and compute efficiency**  
+   CAPRMIL achieves competitive performance while using significantly fewer parameters, FLOPs, and GPU memory than transformer-based MIL models.
+
+---
+
+## CAPRMIL Attention Mechanism
+
+![CAPRMIL Attention](figures/CAPRMIL_attn.png)
+
+**Figure:** CAPRMIL Attention head. Patch embeddings are softly assigned to a small number of context-aware clusters, aggregated into global tokens, processed via multi-head self-attention, and broadcast back to the patch space to produce context-aware representations.
+
+---
+
+## Repository Structure
+
+The repository is organized as follows:
+
 
 ## Structure
 
@@ -18,7 +70,7 @@ The repository is organized as follows:
 ```
 ├── configs # Model and dataset configuration files
 ├── dataset_dependent # Dataset-specific splits and related configurations
-├── scripts # Evaluation scripts (slide-level and instance-level)
+├── scripts # Evaluation scripts (slide-level)
 ├── src # Source code (models, training, and validation logic)
 │ └── main.py # Entry point for training and validation using PyTorch Lightning
 └── README.md
@@ -34,7 +86,7 @@ pip install -r requirements.txt
 Option 2 - using conda:
 ```bash
 conda env create -f environment.yaml
-conda activate sgpmil
+conda activate caprmil
 ```
 
 ## Training
@@ -52,18 +104,6 @@ CUDA_VISIBLE_DEVICES=0 python eval.py \
     --config /path/to/config.yaml \
     --savedir /path/to/save/metrics \
     --k_folds [0,1,2,3,4,5,6,7,8,9]
-```
-
-Instance-level evaluation:
-```bash
-python model_predictions.py \
-    --config /path/to/config.yaml \
-    --savedir /path/to/save/results \
-    --slide_dir /path/to/images \
-    --annotations_dir /path/to/annotations \
-    --shape_file /path/to/shapes.txt \
-    --mask_dir /path/to/masks \
-    --inference --compute_masks --compare_masks --overlay_masks
 ```
 
 ## Paper

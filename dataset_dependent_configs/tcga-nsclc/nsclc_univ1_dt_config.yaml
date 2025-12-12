@@ -8,11 +8,10 @@ data:
   patient_strat: True
   num_classes: 2
   type: binary
-  shape_file: ../images_shapes_lvl0/nsclc_images_shape.txt
+  shape_file: /home/ubuntu/Projects/TransolverMIL/images_shapes_lvl0/nsclc_images_shape.txt
 
 logging:
   feature_extractor: UNIv1_lvl2 # current feature extractor
   group: univ1 # In the form of model type_feature extractor
-  model_chkpt_dir: ../experiments # Path to the directory where the model checkpoints will be saved
 
 

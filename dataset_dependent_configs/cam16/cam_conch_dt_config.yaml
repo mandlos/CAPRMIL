@@ -1,0 +1,18 @@
+data:
+  csv_path: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/cam16/labels.csv # Path to labels.csv
+  data_root_dir: /mnt/features/CAMELYON16_dataset/CONCHv1_CAM16_lvl2_224_features # Path to the root directory of the dataset
+  split_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/cam16/splits # Path to the directory containing the splits
+  feature_extractor: CONCH # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
+  print_info: True
+  label_dict: {'normal':0, 'tumor':1} # Dictionary to map labels to integers
+  patient_strat: False
+  num_classes: 2
+  type: binary
+  shape_file: /home/ubuntu/Projects/TransolverMIL/images_shapes_lvl0/cam16_images_shape.txt
+
+logging:
+  feature_extractor: CONCH_lvl2 # current feature extractor
+  group: conch_lvl2 # In the form of model type_feature extractor
+  # model_chkpt_dir: ../experiments # Path to the directory where the model checkpoints will be saved
+
+

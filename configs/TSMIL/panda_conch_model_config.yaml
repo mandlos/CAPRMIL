@@ -1,0 +1,67 @@
+data:
+  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/panda/panda_conch_dt_config.yaml
+  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/panda/out/panda_conch_20x
+  data_dims: 512    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
+  num_classes: 6
+  use_h5: True
+  train_frac: 1.0
+  seed_mode: False # for multiple seed experiments-not used with k-fold
+  split: 0 # or fold number for cross-validation [0-4]
+
+model:
+  attention: tsmil            # tell main.py to load LitTSMIL
+
+  # ---- TSMIL architecture ----
+  embed_dim: 512             # MUST match data.data_dims
+  hidden_dim: 128 # 128 or 256 is good
+  num_heads: 8
+  head_dim: 32    # currently overriden s.t. head_dim = hidden_dim // num_heads
+  cluster_num: 4
+  T_depth: 1              # number of TransolverBlocks
+  mlp_ratio: 4
+  dropout: 0.1
+  aggregator: gated_attn
+
+  use_temperature: True
+  # general
+  print_model: True
+
+logging:
+  save_predictions: True
+  run_name: test_run  # Can be set to auto
+  tracking_url: ../mlruns
+  high_conf_metrics: False
+  wandb: True
+  project: PANDA  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil # Path to the directory where the model checkpoints will be saved
+  model_version: v0 # Version of the model, according to ./custom_framework/heatmaps/results/model_version.json
+
+seed: 2025   # Seed for everything with the seed_torch function from main.py
+phase: train # train, test
+
+training:
+  max_epochs: 30
+  gpu_index: [0]
+  strategy: auto
+  precision: '32'
+  patience: 20
+
+  optimizer: adamw
+  learning_rate: 2.e-4
+  reg: 1.e-5
+  momentum: 0.9
+
+  scheduler: cosine     # or cosine
+  min_delta: 1.e-4
+  min_lr: 1.e-7
+  warmup_epochs: 6
+  warmup_lr: 1.e-5
+
+  lr_logging_interval: epoch
+  lr_logging_frequency: 1
+  log_weight_decay: True
+
+testing:
+  # experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil_hdims128_cluster4_mlp4_heads8_frac1.0/CONCHv1_PANDA_20x/0/last.ckpt
+  # experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil_hdims128_cluster4_mlp4_heads8_frac1.0_attn/CONCHv1_PANDA_20x/0/last.ckpt
+  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/tsmil_hdims128_cluster4_mlp4_heads8_frac1.0_gated_attn/CONCHv1_PANDA_20x/0/last.ckpt

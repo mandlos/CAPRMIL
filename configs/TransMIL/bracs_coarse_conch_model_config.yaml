@@ -1,0 +1,69 @@
+data:
+  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/bracs_coarse_conch_dt_config.yaml
+  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/out/bracs_coarse_conch_lvl2
+  data_dims: 512    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
+  num_classes: 3
+  use_h5: True
+  train_frac: 1.0 # fraction of training data to use [0.10, 0.25, 0.50, 0.75, 1.0]
+  seed_mode: True # for multiple seed experiments-not used with k-fold
+  split: 0 # or fold number for cross-validation
+
+model:
+  attention: transmil # [clam, transmil, mil]
+  variant: null # [sb, mb] for single or multi branch
+  model_size: null
+  feature_extractor: conch # [resnet50, conch, univ1, hoptimus]
+  gate: null
+  embed_dim: 512
+  dropout: null
+  B: null
+  instance_loss_fn: null
+  bag_loss_fn: 'ce' # [ce, svm]
+  bag_weight: null
+  subtyping: null
+  print_model: True
+
+logging:
+  save_predictions: True
+  run_name: test_run  # Can be set to auto
+  tracking_url: ./mlruns
+  high_conf_metrics: False
+  wandb: True
+  project: BRACS  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/transmil # Path to the directory where the model checkpoints will be saved
+  model_version: v4
+
+seed: 2029 # Random seed for reproducibility v0: 2025, v1: 2026, v2: 2027, v3: 2028, v4: 2029
+phase: train # train, test
+
+training:
+  max_epochs: 30
+  gpu_index: [5]
+  strategy: auto
+  precision: '32' # 32 or 64 (64 if gpu has enough memory)
+  patience: 10 # Early stopping patience
+  optimizer: adamw # [adam, sgd, lookahead_radam]
+  reg: 5.e-5 # weight decay
+  opt_eps: 1.e-8 # Adam epsilon not implemented currently
+  opt_betas: [0.9, 0.999] # Adam betas, not implemented currently
+  momentum: null 
+  scheduler: cosine # [lamda, cosine, linearcosine]
+  learning_rate: 1.e-4  # 0.0001 reasonable choice
+  # stuff exclusively for lamda scheduler
+  lr_decay_after_epoch: 40    # Tune the decay factors
+  stop_decay_after_epoch: 41
+  stop_decay_lr_value: 2.e-5 # Stop decaying the learning rate after this lr value
+  lr_decay_factor: 5.e-1
+  min_delta: 1.e-4
+  # stuff exclusively for cosine/linearcosine scheduler
+  min_lr: 1.e-5
+  # stuff exclusively for linearcosine scheduler
+  warmup_epochs: 5
+  warmup_lr: 1.e-5
+  lr_logging_interval: epoch  # Log learning rate ['step', 'epoch', None]
+  lr_logging_frequency: 1 # Log learning rate every n steps/epochs
+  log_weight_decay: True
+
+testing:
+  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/transmil_frac1.0/CONCHv1_BRACS_20x/2025/last.ckpt
+

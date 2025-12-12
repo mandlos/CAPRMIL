@@ -1,14 +1,14 @@
 data:
-  csv_path: ~/Code/custom_framework/dataset_dependent_configs/panda/filtered_labels.csv # Path to labels.csv
+  csv_path: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/panda/filtered_labels.csv # Path to labels.csv
   data_root_dir: /mnt/features/PANDA/CONCHv1_PANDA_20x # Path to the root directory of the dataset
-  split_dir: ~/Code/custom_framework/dataset_dependent_configs/panda/splits_KR/ # Path to the directory containing the splits
+  split_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/panda/splits/ # Path to the directory containing the splits
   feature_extractor: CONCHv1 # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
   print_info: True
   label_dict: {'NC':0, 'G1':1, 'G2':2, 'G3':3, 'G4':4, 'G5':5} # Dictionary to map labels to integers
   patient_strat: False
   num_classes: 6
   type: isup # binary, isup, gleason_score
-  shape_file: ../images_shapes_lvl0/panda_images_shape.txt
+  shape_file: /home/ubuntu/Projects/TransolverMIL/images_shapes_lvl0/panda_images_shape.txt
   
 logging:
   feature_extractor: CONCHv1_20x # current feature extractor

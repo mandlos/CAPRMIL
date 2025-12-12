@@ -25,6 +25,7 @@ from src.model_dgrmil import DGRMIL
 from src.model_bmil import probabilistic_MIL_Bayes_spvis as BMIL_spvis
 from src.model_bmil_subtyping import probabilistic_MIL_Bayes_spvis as BMIL_spvis_subtyping
 from src.model_bmil import get_ard_reg_vdo
+from src.model_meanmil import MeanMIL
 from src.model_tsmil import TSMIL
 from src.gp_models import SGPMIL, AGP
 
@@ -433,6 +434,10 @@ class LitDetModel(pl.LightningModule):
                                              dropout=self.config['model']['dropout'],
                                              n_classes=self.config['data']['num_classes'],
                                              top_k=self.config['model']['topk'])           
+        elif self.config['model']['attention'] == 'meanmil':
+            model = MeanMIL(input_dim=self.config['data']['data_dims'], 
+                            hidden_dim=self.config['model']['hidden_dim'],
+                            out_dim=self.config['data']['num_classes'])
         else:
             raise ValueError('Model not supported')
         return model
@@ -463,7 +468,7 @@ class LitDetModel(pl.LightningModule):
             #     return self.model(h=x, validation=validation)
             # else:
             #     raise ValueError('BayesMIL Model not supported')
-        elif self.config['model']['attention'] in ['abmil', 'transmil']:
+        elif self.config['model']['attention'] in ['abmil', 'transmil', 'meanmil']:
             return self.model(x)
         else:
             raise ValueError('Model not supported')
@@ -693,6 +698,8 @@ class LitDetModel(pl.LightningModule):
             return self._compute_loss_dgrmil(raw_out, y)
         elif self.config['model']['attention'] in ['bayesmil-spvis']:
             return self._compute_loss_bayesmil(raw_out, y)
+        elif self.config['model']['attention'] in ['meanmil']:
+            return self._compute_loss_meanmil(raw_out, y)
         else:
             raise ValueError('Model not supported')
 
@@ -702,7 +709,7 @@ class LitDetModel(pl.LightningModule):
         # Define loss computation
         instance_loss = raw_out['results_dict']['instance_loss']
         if self.config['model']['bag_loss_fn'] == 'ce':
-            bag_loss = CrossEntropyLoss()(raw_out['Y_prob'], y)
+            bag_loss = CrossEntropyLoss()(raw_out['logits'], y)
         elif self.config['model']['bag_loss_fn'] == 'svm':
             bag_loss = SmoothTop1SVM(n_classes=self.num_classes)(raw_out['logits'], y)
         else:
@@ -718,7 +725,7 @@ class LitDetModel(pl.LightningModule):
         # Define loss computation
         instance_loss = None
         if self.config['model']['bag_loss_fn'] == 'ce':
-            bag_loss = CrossEntropyLoss()(raw_out['Y_prob'], y)
+            bag_loss = CrossEntropyLoss()(raw_out['logits'], y)
         elif self.config['model']['bag_loss_fn'] == 'svm':
             bag_loss = SmoothTop1SVM(n_classes=self.num_classes)(raw_out['logits'], y)
         else:
@@ -737,7 +744,7 @@ class LitDetModel(pl.LightningModule):
 
         # Define loss computation
         if self.config['model']['bag_loss_fn'] == 'ce':
-            bag_loss = CrossEntropyLoss()(raw_out['Y_prob'], y)
+            bag_loss = CrossEntropyLoss()(raw_out['Y_logits'], y)
         elif self.config['model']['bag_loss_fn'] == 'svm':
             bag_loss = SmoothTop1SVM(n_classes=self.num_classes)(raw_out['Y_logits'], y)
         elif self.config['model']['bag_loss_fn'] == 'bcewlogits':
@@ -745,6 +752,10 @@ class LitDetModel(pl.LightningModule):
         else:
             raise ValueError('Bag loss function not supported, try ce, svm or bcewlogits')
 
+        return {'total_loss': bag_loss, 'instance_loss': None, 'bag_loss': bag_loss}
+
+    def _compute_loss_meanmil(self, raw_out: dict={}, y:int=-1):
+        bag_loss = CrossEntropyLoss()(raw_out['Y_logits'], y)
         return {'total_loss': bag_loss, 'instance_loss': None, 'bag_loss': bag_loss}
 
     def _compute_loss_dgrmil(self, raw_out: dict={}, y:int=-1):
@@ -878,6 +889,7 @@ class LitTSMIL(pl.LightningModule):
             dropout=config['model']['dropout'],
             aggregator=config['model']['aggregator'],
             num_classes=config['data']['num_classes'],
+            use_temperature=config['model']['use_temperature'],
         )
 
         # for logging

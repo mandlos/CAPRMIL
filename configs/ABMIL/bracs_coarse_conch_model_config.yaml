@@ -1,0 +1,72 @@
+data:
+  dataset_config: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/bracs_coarse_conch_dt_config.yaml
+  artifact_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/out/bracs_coarse_conch_lvl2
+  data_dims: 512    # Embeddings dimensions Resnet50:1024, CONCH: 512, UNIv1: 1024, HOPTIMUS: 1536
+  num_classes: 3
+  use_h5: True
+  train_frac: 1.0 # fraction of training data to use [0.10, 0.25, 0.50, 0.75, 1.0]
+  seed_mode: True # for multiple seed experiments-not used with k-fold
+  split: 0 # or fold number for cross-validation
+
+model:
+  attention: abmil # [gp, clam, transmil, abmil, dgrmil]
+  variant: null # [sb, mb] for single or multi branch
+  model_size: null
+  attn_branches: 1 # Number of attention branches
+  feature_extractor: conch # [resnet50, conch, univ1, hoptimus]
+  gate: True
+  embed_dim: 512
+  # intermediate layers to reduce dimensionality of features i.e. L and M inside the model
+  hidden_layer1: 512
+  hidden_layer2: 128
+  dropout: 0.15
+  attn_branches: 1
+  instance_loss_fn: null
+  bag_loss_fn: 'ce' # [svm, ce, bcewlogits], ce: CrossEntropy, bcewlogits: BCEWithLogitsLoss, svm:SmoothTop1SVM
+  bag_weight: null # weight coefficient for bag level loss i.e. bag_weight * bag_loss + (1-bag_weight) * instance_loss
+  subtyping: False # CLAM
+  print_model: True
+
+logging:
+  save_predictions: True
+  run_name: test_run  # Can be set to auto
+  tracking_url: ./mlruns
+  high_conf_metrics: False
+  wandb: True
+  project: BRACS  # Name of the project in wandb i.e. Dataset name
+  model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/abmil # Path to the directory where the model checkpoints will be saved
+  model_version: v0
+
+
+seed: 2029 # Seeds for reproducibility v0:2025, v1:2026, v2:2027, v3:2028, v4:2029, saved as different versions 
+phase: train # train, test
+
+training:
+  max_epochs: 30
+  gpu_index: [2]
+  strategy: auto
+  precision: '32'
+  patience: 10 # Early stopping patience
+  optimizer: adamw # [adam, sgd, adamw, lookahead_radam]
+  reg: 5.e-5 #  weight decay regularization----->check 5.e-3
+  scheduler: cosine # [lamda, cosine, linearcosine]
+  learning_rate: 1.e-4  # 0.0001 reasonable choice
+  # stuff exclusively for lamda scheduler
+  lr_decay_after_epoch: 20    # Tune the decay factors
+  stop_decay_after_epoch: 21
+  stop_decay_lr_value: 0.00002 # Stop decaying the learning rate after this lr value
+  lr_decay_factor: 0.1
+  min_delta: 0.0001
+  # stuff exclusively for cosine/linearcosine scheduler
+  min_lr: 1.e-5
+  # stuff exclusively for linearcosine scheduler
+  warmup_epochs: 5
+  warmup_lr: 1.e-5
+  # logging stuff
+  lr_logging_interval: epoch  # Log learning rate ['step', 'epoch', None]
+  lr_logging_frequency: 1 # Log learning rate every n steps/epochs
+  log_weight_decay: True
+
+testing:
+  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/abmil_frac1.0/CONCHv1_BRACS_20x/2025/last.ckpt
+

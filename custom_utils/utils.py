@@ -330,6 +330,9 @@ class EpochTimingCallback(Callback):
         avg_val = sum(self.val_times) / len(self.val_times)
         pl_module.log("avg_val_epoch_time", avg_val, prog_bar=True, on_epoch=True)
 
+    def on_save_checkpoint(self, trainer, pl_module, checkpoint):
+        checkpoint["train_epoch_times"] = self.train_times
+        checkpoint["val_epoch_times"] = self.val_times
 
 def main():
     return

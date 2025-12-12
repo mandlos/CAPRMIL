@@ -1,0 +1,15 @@
+data:
+  csv_path: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/coarse_conch/labels.csv # Path to labels.csv
+  data_root_dir: /mnt/features/BRACS/20x_224px_0px_overlap/CONCHv1_BRACS_20x # Path to the root directory of the dataset
+  split_dir: /home/ubuntu/Projects/TransolverMIL/dataset_dependent_configs/bracs/coarse_conch/splits/ # Path to the directory containing the splits
+  feature_extractor: CONCHv1 # current feature extractor (ResNet50, UNIv1, HOPTIMUS, CONCH)
+  print_info: True
+  label_dict: {'AT':0, 'BT':1, 'MT':2} # Dictionary to map labels to integers
+  patient_strat: False
+  num_classes: 3
+  type: coarse # binary, isup, gleason_score, coarse
+  shape_file: /home/ubuntu/Projects/TransolverMIL/images_shapes_lvl0/bracs_images_shape.txt
+
+logging:
+  feature_extractor: CONCHv1_20x # current feature extractor
+  group: conchv1 # In the form of model type_feature extractor

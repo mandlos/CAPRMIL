@@ -2,15 +2,49 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
+# class MILAggregator(nn.Module):
+#     """
+#     MIL aggregation heads. Currently mean aggregation only.
+#     """
+#     def __init__(self, mode='mean'):
+#         super().__init__()
+#         self.mode = mode
+    
+#     def forward(self, x):
+#         """
+#         x: [B, N, D]
+#         returns: [B, D]
+#         """
+#         if self.mode == 'mean':
+#             return x.mean(dim=1)
+#         else:
+#             raise NotImplementedError(f"Aggregator mode {self.mode} not implemented.")
 
 class MILAggregator(nn.Module):
     """
-    MIL aggregation heads. Currently mean aggregation only.
+    MIL aggregation heads:
+      - mean
+      - attn
+      - gated_attn
     """
-    def __init__(self, mode='mean'):
+    def __init__(self, mode='mean', dim=None, attn_hidden_dim=128, dropout=False):
         super().__init__()
         self.mode = mode
-    
+        if mode == 'mean':
+            self.attn = None
+
+        elif mode == 'attn':
+            assert dim is not None, "dim must be provided for attention aggregation"
+            self.attn = Attn_Net(L=dim, D=attn_hidden_dim,
+                                 dropout=dropout, n_classes=1)
+
+        elif mode == 'gated_attn':
+            assert dim is not None, "dim must be provided for gated attention aggregation"
+            self.attn = DAttn_Net_Gated(L=dim, D=attn_hidden_dim,
+                                       dropout=dropout, n_classes=1)
+        else:
+            raise ValueError(f"Unknown aggregator mode: {mode}")
+
     def forward(self, x):
         """
         x: [B, N, D]
@@ -18,9 +52,76 @@ class MILAggregator(nn.Module):
         """
         if self.mode == 'mean':
             return x.mean(dim=1)
-        else:
-            raise NotImplementedError(f"Aggregator mode {self.mode} not implemented.")
+
+        # Attention-based aggregation
+        B, N, D = x.shape
+        bag_reprs = []
+
+        for b in range(B):
+            A, xb = self.attn(x[b])        # A: [N, 1], xb: [N, D]
+            A = torch.softmax(A, dim=0)    # normalize over instances
+            bag = torch.sum(A * xb, dim=0)
+            bag_reprs.append(bag)
+
+        return torch.stack(bag_reprs, dim=0)  # [B, D]
+
+
+
+"""
+Attention Network without Gating (2 fc layers)
+args:
+    L: input feature dimension
+    D: hidden layer dimension
+    dropout: whether to use dropout (p = 0.25)
+    n_classes: number of classes 
+"""
+class Attn_Net(nn.Module):
+
+    def __init__(self, L = 1024, D = 256, dropout = False, n_classes = 1):
+        super(Attn_Net, self).__init__()
+        self.module = [
+            nn.Linear(L, D),
+            nn.Tanh()]
+
+        if dropout:
+            self.module.append(nn.Dropout(0.25))
+
+        self.module.append(nn.Linear(D, n_classes))
         
+        self.module = nn.Sequential(*self.module)
+    
+    def forward(self, x):
+        return self.module(x), x # N x n_classes
+
+"""
+Attention Network with Gating (3 fc layers)
+"""
+class DAttn_Net_Gated(nn.Module):
+    def __init__(self, L = 1024, D = 256, dropout = False, n_classes = 1):
+        super(DAttn_Net_Gated, self).__init__()
+        self.attention_a = [
+            nn.Linear(L, D),
+            nn.Tanh()]
+
+        self.attention_b = [nn.Linear(L, D),
+                            nn.Sigmoid()]
+        if dropout:
+            self.attention_a.append(nn.Dropout(0.25))
+            self.attention_b.append(nn.Dropout(0.25))
+
+        self.attention_a = nn.Sequential(*self.attention_a)
+        self.attention_b = nn.Sequential(*self.attention_b)
+
+        self.attention_c = nn.Linear(D, n_classes)
+
+    def forward(self, x):
+        a = self.attention_a(x)
+        b = self.attention_b(x)
+        A = a.mul(b)
+        A = self.attention_c(A)  # N x n_classes
+        # print(x.shape)
+        return A, x
+
 
 class TransolverAttention(nn.Module):
     """
@@ -34,7 +135,8 @@ class TransolverAttention(nn.Module):
     Output:
         out: [B, N, D]
     """
-    def __init__(self, input_dim, head_num=8, head_dim=64, cluster_num=32, dropout=0.1):
+    def __init__(self, input_dim, head_num=8, head_dim=64, 
+                 cluster_num=32, dropout=0.1, use_temperature=True):
         super().__init__()
 
         # dimensions
@@ -63,9 +165,14 @@ class TransolverAttention(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.dropout = nn.Dropout(dropout)
         self.scale = head_dim ** -0.5
+        
+        self.use_temperature = use_temperature
 
         # learnable temperature (per head)
-        self.temperature = nn.Parameter(torch.ones(1, head_num, 1, 1) * 0.5)
+        if self.use_temperature:
+            self.temperature = nn.Parameter(torch.ones(1, head_num, 1, 1) * 0.5)
+        else:
+            self.register_buffer('temperature', torch.ones(1, head_num, 1, 1))
 
     def forward(self, x):
         """
@@ -81,15 +188,15 @@ class TransolverAttention(nn.Module):
         fx_mid = self.in_project_fx(x).reshape(B, N, self.head_num, self.head_dim).permute(0, 2, 1, 3)
         # print(f"[Slice] fx_mid shape: {fx_mid.shape}")
 
-        # Soft assignment of each patch to M prototypes/clusters/slices
+        # Soft assignment of each patch to M clusters/slices
         slice_logits = self.in_project_slice(x_mid) / self.temperature  # [B, H, N, M]
         # print(f"[Slice] slice_logits shape: {slice_logits.shape}")
         slice_weights = self.softmax(slice_logits) # each of the B*H matrices NxM is row-stochastic
 
-        # Normalize each of the M slices/prototypes (avoid division by zero)
+        # Normalize each of the M slices/clusters (avoid division by zero)
         slice_norm = slice_weights.sum(dim=2)  # [B, H, M]
 
-        # Compute slice tokens/prototypes via weighted average
+        # Compute slice tokens/clusters via weighted average
         slice_token = torch.einsum("bhnd,bhnm->bhmd", fx_mid, slice_weights)
         # print(f"[Slice] prototypes shape: {slice_token.shape}")
         slice_token = slice_token / (slice_norm[:, :, :, None] + 1e-5)
@@ -104,7 +211,7 @@ class TransolverAttention(nn.Module):
         attn = self.softmax(attn)
         attn = self.dropout(attn)
 
-        out_slice_token = torch.matmul(attn, v)  # [B, H, G, D_head]
+        out_slice_token = torch.matmul(attn, v)  # [B, H, M, D_head]
         # print(f"[Attention] out_slice_token shape: {out_slice_token.shape}")
 
         # ---- (3) De-slice ---------------------------------------------------
@@ -120,7 +227,9 @@ class TransolverBlock(nn.Module):
       LN → TransolverAttention → residual
       LN → MLP → residual
     """
-    def __init__(self, dim, num_heads, head_dim, cluster_num=32, mlp_ratio=4, dropout=0.1, last_layer=False, out_dim=1):
+    def __init__(self, dim, num_heads, head_dim, 
+                 cluster_num=32, mlp_ratio=4, dropout=0.1, 
+                 last_layer=False, out_dim=1, use_temperature=True):
         super().__init__()
 
         self.last_layer = last_layer
@@ -130,7 +239,8 @@ class TransolverBlock(nn.Module):
             head_num=num_heads,
             head_dim=head_dim,
             cluster_num=cluster_num,
-            dropout=dropout
+            dropout=dropout,
+            use_temperature=use_temperature
         )
 
         self.ln2 = nn.LayerNorm(dim)
@@ -172,7 +282,7 @@ class TSMIL(nn.Module):
         Patch embeddings → L × TransolverBlock → MIL aggregator → Bag logits
     """
     def __init__(self, input_dim, hidden_dim, num_heads=8, head_dim=64, cluster_num=32, T_depth=1, 
-                 mlp_ratio=4, dropout=0.1, aggregator = 'mean', num_classes=2):
+                 mlp_ratio=4, dropout=0.1, aggregator = 'mean', num_classes=2, use_temperature=True):
         super().__init__()
 
         self.input_proj = nn.Sequential(
@@ -194,12 +304,13 @@ class TSMIL(nn.Module):
                     cluster_num=cluster_num,
                     mlp_ratio=mlp_ratio,
                     dropout=dropout,
-                    last_layer=False  # last layer is MIL head, not block
+                    last_layer=False,  # last layer is MIL head, not block
+                    use_temperature=use_temperature
                 )
             )
 
         # MIL aggregator
-        self.aggregator = MILAggregator(aggregator)
+        self.aggregator = MILAggregator(mode=aggregator, dim=current_dim, attn_hidden_dim=current_dim, dropout=True)
 
         # Final classifier
         self.classifier = nn.Linear(current_dim, num_classes)

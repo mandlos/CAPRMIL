@@ -31,14 +31,14 @@ logging:
   wandb: True
   project: CAMELYON16  # Name of the project in wandb i.e. Dataset name
   model_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/transmil # Path to the directory where the model checkpoints will be saved
-  model_version: time
+  model_version: gpu_util
 
 seed: 2024   # Seed for everything with the seed_torch function from main.py
 phase: train # train, test
 
 training:
-  max_epochs: 30
-  gpu_index: [0]
+  max_epochs: 10
+  gpu_index: [5]
   strategy: auto
   precision: '32' # 32 or 64 (64 if gpu has enough memory)
   patience: 200 # Early stopping patience
@@ -65,5 +65,5 @@ training:
   log_weight_decay: True
 
 testing:
-  experiment_ckpt_dir: ../experiments/transmil_v0/UNIv1_CAM16_lvl2_224_features/9/last.ckpt
+  experiment_ckpt_dir: /home/ubuntu/Projects/TransolverMIL/experiments/transmil_frac1./UNIv1_CAM16_lvl2_224_features/0/last.ckpt
 

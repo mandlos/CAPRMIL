@@ -8,7 +8,7 @@ data:
   patient_strat: False
   num_classes: 7
   type: fine # binary, isup, gleason_score, coarse
-  shape_file: ../images_shapes_lvl0/bracs_images_shape.txt
+  shape_file: /home/ubuntu/Projects/TransolverMIL/images_shapes_lvl0/bracs_images_shape.txt
 
 logging:
   feature_extractor: UNIv1_20x # current feature extractor

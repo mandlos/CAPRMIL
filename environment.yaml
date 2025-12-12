@@ -1,4 +1,4 @@
-name: tsmil
+name: caprmil
 channels:
   - conda-forge
   - nvidia

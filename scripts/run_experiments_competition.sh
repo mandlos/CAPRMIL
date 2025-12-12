@@ -13,14 +13,36 @@ GPU_INDEX=0
 # 2. Experiment grid
 # -------------------------
 TRAIN_FRAC=(1.0)
-FOLD=(0 1 2 3 4 5 6 7 8 9)
+FOLD=(0 1 2 3 4) # for 
 SEED=(2025) # later for multiple seeds experiments e.g. for BRACS
 
 # check for --hidden XX
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --config) BASE_CFG="$2"; shift ;;
-        --seeds) IFS=',' read -r -a SEED <<< "$2"; shift ;;
+        --config)
+            BASE_CFG="$2"
+            shift 2
+            ;;
+        --seeds)
+            shift
+            SEED=()
+            while [[ "$1" && "$1" != --* ]]; do
+                SEED+=("$1")
+                shift
+            done
+            ;;
+        --gpu)
+            GPU_INDEX="$2"
+            shift 2
+            ;;
+        --fold)
+            shift
+            FOLD=()
+            while [[ "$1" && "$1" != --* ]]; do
+                FOLD+=("$1")
+                shift
+            done
+            ;;
         --train_frac)
             shift
             TRAIN_FRAC=()
@@ -28,12 +50,14 @@ while [[ "$#" -gt 0 ]]; do
                 TRAIN_FRAC+=("$1")
                 shift
             done
-            continue
             ;;
-        --gpu) GPU_INDEX="$2"; shift ;;
+        *)
+            echo "Unknown argument: $1"
+            shift
+            ;;
     esac
-    shift
 done
+
 
 if [[ -z "$BASE_CFG" ]]; then
   echo "ERROR: --config not provided"
