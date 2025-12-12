@@ -59,11 +59,6 @@ CAPRMIL introduces the following key advances:
 
 ---
 
-## Repository Structure
-
-The repository is organized as follows:
-
-
 ## Structure
 
 The repository is organized as follows:
