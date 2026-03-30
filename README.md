@@ -3,7 +3,7 @@
 This repository contains the official implementation and supporting materials for **CAPRMIL**, as introduced in our paper:
 
 **CAPRMIL: Context-Aware Patch Representations for Multiple Instance Learning**  
-*Under review – MIDL 2026*
+*Accepted at MIDL 2026*
 
 ![CAPRMIL Framework](figures/CAPRMIL_block.png)
 
