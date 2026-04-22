@@ -1,8 +1,8 @@
-# **CAPRMIL**: Context-Aware Patch Representations for Multiple Instance Learning
+# Context-Aware Patch Representations for Multiple Instance Learning
 
 This repository contains the official implementation and supporting materials for **CAPRMIL**, as introduced in our paper:
 
-**CAPRMIL: Context-Aware Patch Representations for Multiple Instance Learning**  
+**Context-Aware Patch Representations for Multiple Instance Learning**  
 *Accepted at MIDL 2026*
 
 ![CAPRMIL Framework](figures/CAPRMIL_block.png)
